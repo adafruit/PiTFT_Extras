@@ -151,10 +151,6 @@ if rotation is None:
 		parser.print_help()
 		sys.exit(1)
 
-print '---------------------------------'
-print 'USING ROTATION: {0}'.format(rotation)
-print ''
-
 # Check rotation is allowed value.
 if rotation not in allowed_rotations:
 	print 'Unsupported rotation value: {0}'.format(rotation)
@@ -163,6 +159,10 @@ if rotation not in allowed_rotations:
 	print ''
 	parser.print_help()
 	sys.exit(1)
+
+print '---------------------------------'
+print 'USING ROTATION: {0}'.format(rotation)
+print ''
 
 # Print current calibration values.
 print '---------------------------------'
