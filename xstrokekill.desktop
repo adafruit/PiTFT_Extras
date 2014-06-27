@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=XStroke Kill
+Comment=Kill Stroke Recognition
+Exec=sudo killall xstroke
+Terminal=false
+Type=Application
+MimeType=text/plain
+Categories=GTK;Utility;TextEditor;

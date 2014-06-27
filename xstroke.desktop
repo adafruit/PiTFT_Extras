@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=XStroke
+Comment=Stroke Recognition
+Exec=xstroke
+Terminal=false
+Type=Application
+MimeType=text/plain
+Categories=GTK;Utility;TextEditor;
