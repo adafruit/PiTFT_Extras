@@ -25,6 +25,7 @@
 # SOFTWARE.
 import argparse
 import os
+import os.path
 import re
 import subprocess
 import sys
@@ -106,10 +107,15 @@ def read_file(filename):
 def write_file(filename, data):
 	"""Write specified data to file.  Returns True if data was written."""
 	try:
+		# Check if path to file exists.  Create path if necessary.
+		directory = os.path.dirname(filename)
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		# Open file and write data.
 		with open(filename, 'w') as outfile:
 			outfile.write(data)
 			return True
-	except IOError:
+	except IOError, OSError:
 		return False
 
 
