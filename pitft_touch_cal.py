@@ -76,41 +76,47 @@ EndSection
 # 2.8" capacitive touch calibration values.
 CAL_CONFIG['28c'] = {}
 CAL_CONFIG['28c']['pointercal'] = {}
-CAL_CONFIG['28c']['pointercal']['0']   = '4315 -49 -889068 18 5873 -1043172 6553636'
-CAL_CONFIG['28c']['pointercal']['90']  = '-30 -5902 22077792 4360 -105 -1038814 65536'
-CAL_CONFIG['28c']['pointercal']['180'] = '-4228 73 16353030 -60 -5888 22004262 65536'
-CAL_CONFIG['28c']['pointercal']['270'] = '-69 5859 -829540 -4306 3 16564590 6553636'
+CAL_CONFIG['28c']['pointercal']['0']   = '-65536 0 15728640 -320 -65536 20971520 65536'
+CAL_CONFIG['28c']['pointercal']['90']  = '320 65536 0 -65536 0 15728640 65536'
+CAL_CONFIG['28c']['pointercal']['180'] = '65536 0 -655360 0 65536 -655360 65536'
+CAL_CONFIG['28c']['pointercal']['270'] = '0 -65536 20971520 65536 0 -65536 65536'
 CAL_CONFIG['28c']['xorg'] = {}
 CAL_CONFIG['28c']['xorg']['0'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "252 3861 180 3745"
-    Option  "SwapAxes"      "0"
+    Identifier "captouch"
+    MatchProduct "ft6x06_ts"
+    Option "SwapAxes" "0"
+    Option "InvertY" "1"
+    Option "InvertX" "1"
+    Option "Calibration" "0 240 0 320"
 EndSection
 """
 CAL_CONFIG['28c']['xorg']['90'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "3807 174 244 3872"
-    Option  "SwapAxes"      "1"
+    Identifier "captouch"
+    MatchProduct "ft6x06_ts"
+    Option "SwapAxes" "1"
+    Option "InvertY" "1"
+    Option "Calibration" "0 320 0 240"
 EndSection
 """
 CAL_CONFIG['28c']['xorg']['180'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "3868 264 3789 237"
-    Option "SwapAxes"      "0"
+    Identifier "captouch"
+    MatchProduct "ft6x06_ts"
+    Option "SwapAxes" "0"
+    Option "InvertY" "0"
+    Option "Calibration" "0 240 0 320"
 EndSection
 """
 CAL_CONFIG['28c']['xorg']['270'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "287 3739 3817 207"
-    Option  "SwapAxes"      "1"
+    Identifier "captouch"
+    MatchProduct "ft6x06_ts"
+    Option "SwapAxes" "1"
+    Option "InvertY" "0"
+    Option "InvertX" "1"
+    Option "Calibration" "0 320 0 240"
 EndSection
 """
 
@@ -203,7 +209,7 @@ def determine_type():
     # Check for display type based on loaded modules.
     if 'stmpe_ts' in modules and 'fb_ili9340' in modules:
         return '28r'
-    elif 'ft6x06' in modules and 'fb_ili9340' in modules:
+    elif 'ft6x06_ts' in modules and 'fb_ili9340' in modules:
         return '28c'
     elif 'stmpe_ts' in modules and 'fb_hx8357d' in modules:
         return '35r'
