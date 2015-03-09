@@ -123,41 +123,47 @@ EndSection
 # 3.5" resisitive touch calibration values.
 CAL_CONFIG['35r'] = {}
 CAL_CONFIG['35r']['pointercal'] = {}
-CAL_CONFIG['35r']['pointercal']['0']   = '-4228 73 16353030 -60 -5888 22004262 65536'
-CAL_CONFIG['35r']['pointercal']['90']  = '-69 5859 -829540 -4306 3 16564590 6553636'
-CAL_CONFIG['35r']['pointercal']['180'] = '4315 -49 -889068 18 5873 -1043172 6553636'
-CAL_CONFIG['35r']['pointercal']['270'] = '-30 -5902 22077792 4360 -105 -1038814 65536'
+CAL_CONFIG['35r']['pointercal']['0']   = '5835 56 -1810410 22 8426 -1062652 65536'
+CAL_CONFIG['35r']['pointercal']['90']  = '-16 -8501 33169914 5735 45 -1425640 65536'
+CAL_CONFIG['35r']['pointercal']['180'] = '-5853 8 22390770 -59 -8353 32810368 65536'
+CAL_CONFIG['35r']['pointercal']['270'] = '-95 8395 -908648 -5849 164 22156762 65536'
 CAL_CONFIG['35r']['xorg'] = {}
 CAL_CONFIG['35r']['xorg']['0'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "3868 264 3789 237"
-    Option "SwapAxes"      "0"
+    Identifier "calibration"
+    MatchProduct "stmpe-ts"
+    Option "Calibration" "291 3847 141 3889"
+    Option "SwapAxes" "0"
 EndSection
 """
 CAL_CONFIG['35r']['xorg']['90'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "287 3739 3817 207"
-    Option  "SwapAxes"      "1"
+    Identifier "calibration"
+    MatchProduct "stmpe-ts"
+    Option "Calibration" "150 3912 3843 255"
+    Option "SwapAxes" "1"
+    Option "InvertX" "1"
+    Option "InvertY" "1"  
 EndSection
 """
 CAL_CONFIG['35r']['xorg']['180'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "252 3861 180 3745"
-    Option  "SwapAxes"      "0"
+    Identifier "calibration"
+    MatchProduct "stmpe-ts"
+    Option "Calibration" "291 3847 141 3889"
+    Option "SwapAxes" "0"
+    Option "InvertX" "1"
+    Option "InvertY" "1"
 EndSection
 """
 CAL_CONFIG['35r']['xorg']['270'] = """
 Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "stmpe-ts"
-    Option  "Calibration"   "3807 174 244 3872"
-    Option  "SwapAxes"      "1"
+    Identifier "calibration"
+    MatchProduct "stmpe-ts"
+    Option "Calibration" "150 3912 3843 255"
+    Option "SwapAxes" "1"
+    Option "InvertX" "0"
+    Option "InvertY" "0"  
 EndSection
 """
 
