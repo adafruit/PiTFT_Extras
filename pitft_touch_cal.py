@@ -25,147 +25,264 @@
 # SOFTWARE.
 import argparse
 import os
-import os.path
-import re
 import subprocess
 import sys
 
 
-# Define calibration files.
+# Calibration configuration default values.
+CAL_CONFIG = {}
+
+# 2.8" resisitive touch calibration values.
+CAL_CONFIG['28r'] = {}
+CAL_CONFIG['28r']['pointercal'] = {}
+CAL_CONFIG['28r']['pointercal']['0']   = '4315 -49 -889068 18 5873 -1043172 6553636'
+CAL_CONFIG['28r']['pointercal']['90']  = '-30 -5902 22077792 4360 -105 -1038814 65536'
+CAL_CONFIG['28r']['pointercal']['180'] = '-4228 73 16353030 -60 -5888 22004262 65536'
+CAL_CONFIG['28r']['pointercal']['270'] = '-69 5859 -829540 -4306 3 16564590 6553636'
+CAL_CONFIG['28r']['xorg'] = {}
+CAL_CONFIG['28r']['xorg']['0'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "252 3861 180 3745"
+    Option  "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['28r']['xorg']['90'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3807 174 244 3872"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+CAL_CONFIG['28r']['xorg']['180'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3868 264 3789 237"
+    Option "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['28r']['xorg']['270'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "287 3739 3817 207"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+
+# 2.8" capacitive touch calibration values.
+CAL_CONFIG['28c'] = {}
+CAL_CONFIG['28c']['pointercal'] = {}
+CAL_CONFIG['28c']['pointercal']['0']   = '4315 -49 -889068 18 5873 -1043172 6553636'
+CAL_CONFIG['28c']['pointercal']['90']  = '-30 -5902 22077792 4360 -105 -1038814 65536'
+CAL_CONFIG['28c']['pointercal']['180'] = '-4228 73 16353030 -60 -5888 22004262 65536'
+CAL_CONFIG['28c']['pointercal']['270'] = '-69 5859 -829540 -4306 3 16564590 6553636'
+CAL_CONFIG['28c']['xorg'] = {}
+CAL_CONFIG['28c']['xorg']['0'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "252 3861 180 3745"
+    Option  "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['28c']['xorg']['90'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3807 174 244 3872"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+CAL_CONFIG['28c']['xorg']['180'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3868 264 3789 237"
+    Option "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['28c']['xorg']['270'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "287 3739 3817 207"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+
+# 3.5" resisitive touch calibration values.
+CAL_CONFIG['35r'] = {}
+CAL_CONFIG['35r']['pointercal'] = {}
+CAL_CONFIG['35r']['pointercal']['0']   = '-4228 73 16353030 -60 -5888 22004262 65536'
+CAL_CONFIG['35r']['pointercal']['90']  = '-69 5859 -829540 -4306 3 16564590 6553636'
+CAL_CONFIG['35r']['pointercal']['180'] = '4315 -49 -889068 18 5873 -1043172 6553636'
+CAL_CONFIG['35r']['pointercal']['270'] = '-30 -5902 22077792 4360 -105 -1038814 65536'
+CAL_CONFIG['35r']['xorg'] = {}
+CAL_CONFIG['35r']['xorg']['0'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3868 264 3789 237"
+    Option "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['35r']['xorg']['90'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "287 3739 3817 207"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+CAL_CONFIG['35r']['xorg']['180'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "252 3861 180 3745"
+    Option  "SwapAxes"      "0"
+EndSection
+"""
+CAL_CONFIG['35r']['xorg']['270'] = """
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "stmpe-ts"
+    Option  "Calibration"   "3807 174 244 3872"
+    Option  "SwapAxes"      "1"
+EndSection
+"""
+
+# Other configuration.
 POINTERCAL_FILE = '/etc/pointercal'
 XORGCAL_FILE = '/etc/X11/xorg.conf.d/99-calibration.conf'
+ALLOWED_TYPES = CAL_CONFIG.keys()
+ALLOWED_ROTATIONS = ['0', '90', '180', '270']
 
-# Define default calibration values for each rotation angle.
-POINTERCAL = {}
-POINTERCAL['0']   = '4315 -49 -889068 18 5873 -1043172 6553636'
-POINTERCAL['90']  = '-30 -5902 22077792 4360 -105 -1038814 65536'
-POINTERCAL['180'] = '-4228 73 16353030 -60 -5888 22004262 65536'
-POINTERCAL['270'] = '-69 5859 -829540 -4306 3 16564590 6553636'
-XORGCAL = {}
-XORGCAL['0'] = """
-Section "InputClass"
-	Identifier      "calibration"
-	MatchProduct    "stmpe-ts"
-	Option  "Calibration"   "252 3861 180 3745"
-	Option  "SwapAxes"      "0"
-EndSection
-"""
-XORGCAL['90'] = """
-Section "InputClass"
-	Identifier      "calibration"
-	MatchProduct    "stmpe-ts"
-	Option  "Calibration"   "3807 174 244 3872"
-	Option  "SwapAxes"      "1"
-EndSection
-"""
-XORGCAL['180'] = """
-Section "InputClass"
-	Identifier      "calibration"
-	MatchProduct    "stmpe-ts"
-	Option  "Calibration"   "3868 264 3789 237"
-	Option "SwapAxes"      "0"
-EndSection
-"""
-XORGCAL['270'] = """
-Section "InputClass"
-	Identifier      "calibration"
-	MatchProduct    "stmpe-ts"
-	Option  "Calibration"   "287 3739 3817 207"
-	Option  "SwapAxes"      "1"
-EndSection
-"""
-
-
-def determine_rotation():
-	"""Determine the rotation of the PiTFT screen by examining modprobe config."""
-	# Get modprobe configuration for fbtft device.
-	try:
-		resp = subprocess.check_output("modprobe -c | grep 'options fbtft_device'", shell=True)
-	except subprocess.CalledProcessError:
-		# Error calling modprobe, return no result.
-		return None
-	# Look for display with name=adafruit* and rotate=<value>.
-	if resp is None:
-		return None
-	for line in resp.splitlines():
-		if re.search('name=adafruit', line, re.IGNORECASE):
-			match = re.search('rotate=(\d+)', line, re.IGNORECASE)
-			if match:
-				# Found a rotation, return it.
-				return match.group(1)
-	# Couldn't find a rotation value, return nothing.
-	return None
 
 def read_file(filename):
-	"""Read specified file contents and return them, or None if file isn't readable."""
-	try:
-		with open(filename, 'r') as infile:
-			return infile.read()
-	except IOError:
-		return None
+    """Read specified file contents and return them, or None if file isn't
+    readable.
+    """
+    try:
+        with open(filename, 'r') as infile:
+            return infile.read()
+    except IOError:
+        return None
 
 def write_file(filename, data):
-	"""Write specified data to file.  Returns True if data was written."""
-	try:
-		# Check if path to file exists.  Create path if necessary.
-		directory = os.path.dirname(filename)
-		if not os.path.exists(directory):
-			os.makedirs(directory)
-		# Open file and write data.
-		with open(filename, 'w') as outfile:
-			outfile.write(data)
-			return True
-	except IOError, OSError:
-		return False
+    """Write specified data to file.  Returns True if data was written."""
+    try:
+        # Check if path to file exists.  Create path if necessary.
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        # Open file and write data.
+        with open(filename, 'w') as outfile:
+            outfile.write(data)
+            return True
+    except IOError, OSError:
+        return False
+
+def determine_rotation():
+    """Determine the rotation of the PiTFT screen by examining 
+    /sys/class/graphics/fb1/rotate config.
+    """
+    return read_file('/sys/class/graphics/fb1/rotate')
+
+def determine_type():
+    """Determine the type of display by examining loaded kernel modules.
+    """
+    # Call lsmod to list kernel modules.
+    output = subprocess.check_output('lsmod')
+    # Parse out module names from lsmod response (grab first word of each line
+    # after the first line).
+    modules = map(lambda x: x.split()[0], output.splitlines()[1:])
+    # Check for display type based on loaded modules.
+    if 'stmpe_ts' in modules and 'fb_ili9340' in modules:
+        return '28r'
+    elif 'ft6x06' in modules and 'fb_ili9340' in modules:
+        return '28c'
+    elif 'stmpe_ts' in modules and 'fb_hx8357d' in modules:
+        return '35r'
+    else:
+        return None
 
 
 # Parse command line arguments.
-allowed_rotations = POINTERCAL.keys()
 parser = argparse.ArgumentParser(description='Automatically set the PiTFT touchscreen calibration for both /etc/pointercal and X.Org based on the current screen rotation.')
+parser.add_argument('-t', '--type',
+    choices=ALLOWED_TYPES, 
+    required=False,
+    dest='type',
+    help='set display type')
 parser.add_argument('-r', '--rotation', 
-	choices=allowed_rotations, 
-	required=False,
-	dest='rotation',
-	help='set calibration for specified screen rotation')
+    choices=ALLOWED_ROTATIONS, 
+    required=False,
+    dest='rotation',
+    help='set calibration for specified screen rotation')
 parser.add_argument('-f', '--force',
-	required=False,
-	action='store_const',
-	const=True,
-	default=False,
-	dest='force',
-	help='update calibration without prompting for confirmation')
+    required=False,
+    action='store_const',
+    const=True,
+    default=False,
+    dest='force',
+    help='update calibration without prompting for confirmation')
 args = parser.parse_args()
 
 # Check that you're running as root.
 if os.geteuid() != 0:
-	print 'Must be run as root so calibration files can be updated!'
-	print 'Try running with sudo, for example: sudo ./pitft_touch_cal.py'
-	sys.exit(1)
+    print 'Must be run as root so calibration files can be updated!'
+    print 'Try running with sudo, for example: sudo ./pitft_touch_cal.py'
+    sys.exit(1)
+
+# Determine display type if not specified in parameters.
+display_type = args.type
+if display_type is None:
+    display_type = determine_type()
+    if display_type is None:
+        print 'Could not detect display type!'
+        print ''
+        print 'Make sure PiTFT software is configured and run again.'
+        print 'Alternatively, run with the --type parameter to'
+        print 'specify an explicit display type value.'
+        print ''
+        parser.print_help()
+        sys.exit(1)
+
+# Check display type is allowed value.
+if display_type not in ALLOWED_TYPES:
+    print 'Unsupported display type: {0}'.format(display_type)
+    parser.print_help()
+    sys.exit(1)
 
 # Determine rotation if not specified in parameters.
 rotation = args.rotation
 if rotation is None:
-	rotation = determine_rotation()
-	if rotation is None:
-		# Error if rotation couldn't be determined.
-		print 'Could not detect screen rotation!'
-		print ''
-		print 'Make sure PiTFT software is configured and run again.'
-		print 'Alternatively, run with the --rotation parameter to'
-		print 'specify an explicit rotation value.'
-		print ''
-		parser.print_help()
-		sys.exit(1)
+    rotation = determine_rotation()
+    if rotation is None:
+        # Error if rotation couldn't be determined.
+        print 'Could not detect screen rotation!'
+        print ''
+        print 'Make sure PiTFT software is configured and run again.'
+        print 'Alternatively, run with the --rotation parameter to'
+        print 'specify an explicit rotation value.'
+        print ''
+        parser.print_help()
+        sys.exit(1)
 
 # Check rotation is allowed value.
-if rotation not in allowed_rotations:
-	print 'Unsupported rotation value: {0}'.format(rotation)
-	print ''
-	print 'Rotation must be a value of 0, 90, 180, or 270!'
-	print ''
-	parser.print_help()
-	sys.exit(1)
+rotation = rotation.strip()
+if rotation not in ALLOWED_ROTATIONS:
+    print 'Unsupported rotation value: {0}'.format(rotation)
+    parser.print_help()
+    sys.exit(1)
 
+print '---------------------------------'
+print 'USING DISPLAY: {0}'.format(display_type)
+print ''
 print '---------------------------------'
 print 'USING ROTATION: {0}'.format(rotation)
 print ''
@@ -175,44 +292,44 @@ print '---------------------------------'
 print 'CURRENT CONFIGURATION'
 print ''
 for cal_file in [POINTERCAL_FILE, XORGCAL_FILE]:
-	cal = read_file(cal_file)
-	if cal is None:
-		print 'Could not determine {0} configuration.'.format(cal_file)
-	else:
-		print 'Current {0} configuration:'.format(cal_file)
-		print cal.strip()
-		print ''
+    cal = read_file(cal_file)
+    if cal is None:
+        print 'Could not determine {0} configuration.'.format(cal_file)
+    else:
+        print 'Current {0} configuration:'.format(cal_file)
+        print cal.strip()
+        print ''
 
 # Determine new calibration values.
-new_pointercal = POINTERCAL[rotation]
-new_xorgcal = XORGCAL[rotation]
+new_pointercal = CAL_CONFIG[display_type]['pointercal'][rotation]
+new_xorgcal    = CAL_CONFIG[display_type]['xorg'][rotation]
 
 # Print new calibration values.
 print '---------------------------------'
 print 'NEW CONFIGURATION'
 print ''
 for cal, filename in [(new_pointercal, POINTERCAL_FILE), 
-					  (new_xorgcal, XORGCAL_FILE)]:
-	print 'New {0} configuration:'.format(filename)
-	print cal.strip()
-	print ''
+                      (new_xorgcal, XORGCAL_FILE)]:
+    print 'New {0} configuration:'.format(filename)
+    print cal.strip()
+    print ''
 
 # Confirm calibration change with user.
 if not args.force:
-	confirm = raw_input('Update current configuration to new configuration? [y/N]: ')
-	print '---------------------------------'
-	print ''
-	if confirm not in ['y', 'Y', 'yes', 'YES']:
-		print 'Exiting without updating configuration.'
-		sys.exit(0)
+    confirm = raw_input('Update current configuration to new configuration? [y/N]: ')
+    print '---------------------------------'
+    print ''
+    if confirm.lower() not in ['y', 'yes']:
+        print 'Exiting without updating configuration.'
+        sys.exit(0)
 
 # Change calibration.
 status = 0
 for cal, filename in [(new_pointercal, POINTERCAL_FILE), 
-					  (new_xorgcal, XORGCAL_FILE)]:
-	if not write_file(filename, cal):
-		print 'Failed to update {0}'.format(filename)
-		status = 1
-	else:
-		print 'Updated {0}'.format(filename)
+                      (new_xorgcal, XORGCAL_FILE)]:
+    if not write_file(filename, cal):
+        print 'Failed to update {0}'.format(filename)
+        status = 1
+    else:
+        print 'Updated {0}'.format(filename)
 sys.exit(status)
